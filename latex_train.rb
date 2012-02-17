@@ -13,6 +13,7 @@ module LatexTrain
   DefaultType = "article"
   DefaultPaper = "a4paper"
   DefaultFontSize = "11pt"
+  DefaultDirectory = nil
   
   def initialize(args = {})
    @local_filename = args[:file_name] || DefaultFile
@@ -21,13 +22,13 @@ module LatexTrain
    @document_type = args[:document_type] || DefaultType
    @document_paper = args[:document_paper] || DefaultPaper
    @document_fontsize = args[:document_fontsize] || DefaultFontSize
+   @output_directory = args[:output_directory] || DefaultDirectory
   end
 
 
   def preamble
     document = "\\documentclass["+"#{@document_paper}"+","+"#{@document_fontsize}"+"]{"+"#{@document_type}"+"}"
     document += "\\begin{document}\n"
-   
   end
 
   def postamble
@@ -40,6 +41,7 @@ module LatexTrain
 	short_local_filename = @local_filename.chomp(File.extname(@local_filename))
 	line = Cocaine::CommandLine.new(command_line)
 	begin
+	 p line.command
 	 line.run 
         rescue Cocaine::ExitStatusError => e
 	 p "PDFLatex error, see log on "+short_local_filename+".log"
@@ -64,6 +66,11 @@ private
 	 aline += "-draftmode "
 	end
 
+	unless @output_directory.nil? 
+ 	 aline += "-output-directory="
+	 aline += @output_directory + " "
+	end
+
 	aline += "-interaction "
 	aline += @interaction_mode + " "
 
@@ -74,6 +81,8 @@ private
 
   def create_file
    # concatinate file parts and write to file
+
+   #create directory, move to directory
    doc = preamble+"#{@body}"+"\n"+postamble
    File.open(local_filename, 'w') {|f| f.write(doc) }
   end

@@ -3,7 +3,7 @@
 require 'latex_train'
 
 #mydoc = LatexTrain::Document.new :file_name => "change.tex"
-mydoc = LatexTrain::Document.new
+mydoc = LatexTrain::Document.new :output_directory => "documents"
 
 
 mydoc.body = "Hello World"
