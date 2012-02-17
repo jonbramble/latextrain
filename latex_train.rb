@@ -1,0 +1,83 @@
+require 'rubygems'
+require 'cocaine'
+
+module LatexTrain
+ 
+ class Document
+
+  attr_writer :body
+  attr_accessor :local_filename
+
+  DefaultFile = "main.tex"
+  DefaultMode = "nonstopmode"
+  DefaultType = "article"
+  DefaultPaper = "a4paper"
+  DefaultFontSize = "11pt"
+  
+  def initialize(args = {})
+   @local_filename = args[:file_name] || DefaultFile
+   @interaction_mode = args[:interaction_mode] || DefaultMode   #must be a restricted set of values. 
+   @draft_mode = args[:draft_mode] || false
+   @document_type = args[:document_type] || DefaultType
+   @document_paper = args[:document_paper] || DefaultPaper
+   @document_fontsize = args[:document_fontsize] || DefaultFontSize
+  end
+
+
+  def preamble
+    document = "\\documentclass["+"#{@document_paper}"+","+"#{@document_fontsize}"+"]{"+"#{@document_type}"+"}"
+    document += "\\begin{document}\n"
+   
+  end
+
+  def postamble
+    "\\end{document}"
+  end
+
+  def compile
+   create_file
+   if File.exist?(local_filename)
+	short_local_filename = @local_filename.chomp(File.extname(@local_filename))
+	line = Cocaine::CommandLine.new(command_line)
+	begin
+	 line.run 
+        rescue Cocaine::ExitStatusError => e
+	 p "PDFLatex error, see log on "+short_local_filename+".log"
+	end
+	
+	short_local_filename = local_filename.chomp(File.extname(local_filename))
+	if File.exist?(short_local_filename+".pdf")
+	 p "PDF file created on "+short_local_filename+".pdf"
+	end
+   else
+	p "Latex .tex file not created"
+   end
+  end
+
+private
+
+  def command_line
+	aline = "pdflatex "
+	aline += "-file-line-error "
+
+	if @draft_mode 
+	 aline += "-draftmode "
+	end
+
+	aline += "-interaction "
+	aline += @interaction_mode + " "
+
+	aline += @local_filename
+
+	return aline
+  end
+
+  def create_file
+   # concatinate file parts and write to file
+   doc = preamble+"#{@body}"+"\n"+postamble
+   File.open(local_filename, 'w') {|f| f.write(doc) }
+  end
+
+ end
+
+end
