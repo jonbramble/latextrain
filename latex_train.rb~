@@ -25,7 +25,7 @@ module LatexTrain
 
 
   def preamble
-    document = "\\documentclass["+"#{@document_paper}"+","+"#{@document_fontsize}"+"]"+"{"+"#{@document_type}"+"}"
+    document = "\\documentclass["+"#{@document_paper}"+","+"#{@document_fontsize}"+"]{"+"#{@document_type}"+"}"
     document += "\\begin{document}\n"
    
   end
