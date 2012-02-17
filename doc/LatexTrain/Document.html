@@ -84,16 +84,7 @@
   </div>
 
   <div id="project-metadata">
-    <nav id="fileindex-section" class="section project-section">
-  <h3 class="section-header">Pages</h3>
-
-  <ul>
-  
-    <li class="file"><a href="../log_txt.html">log</a>
-  
-  </ul>
-</nav>
-
+    
     <nav id="classindex-section" class="section project-section">
   <h3 class="section-header">Class and Module Index</h3>
 
@@ -124,6 +115,39 @@
 
     
 
+    
+    <!-- Constants -->
+    <section id="constants-list" class="section">
+      <h3 class="section-header">Constants</h3>
+      <dl>
+      
+        <dt id="DefaultFile">DefaultFile
+        
+        <dd class="description">
+        
+      
+        <dt id="DefaultFontSize">DefaultFontSize
+        
+        <dd class="description">
+        
+      
+        <dt id="DefaultMode">DefaultMode
+        
+        <dd class="description">
+        
+      
+        <dt id="DefaultPaper">DefaultPaper
+        
+        <dd class="description">
+        
+      
+        <dt id="DefaultType">DefaultType
+        
+        <dd class="description">
+        
+      
+      </dl>
+    </section>
     
 
     
@@ -171,7 +195,7 @@
         
         <div class="method-heading">
           <span class="method-name">new</span><span
-            class="method-args">()</span>
+            class="method-args">(args = {})</span>
           <span class="method-click-advice">click to toggle source</span>
         </div>
         
@@ -183,9 +207,14 @@
 
           
           <div class="method-source-code" id="new-source">
-            <pre><span class="ruby-comment"># File latex_train.rb, line 10</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>
- <span class="ruby-ivar">@local_filename</span> = <span class="ruby-string">&quot;main.tex&quot;</span>
+            <pre><span class="ruby-comment"># File latex_train.rb, line 17</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">args</span> = {})
+ <span class="ruby-ivar">@local_filename</span> = <span class="ruby-identifier">args</span>[<span class="ruby-value">:file_name</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">DefaultFile</span>
+ <span class="ruby-ivar">@interaction_mode</span> = <span class="ruby-identifier">args</span>[<span class="ruby-value">:interaction_mode</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">DefaultMode</span>   <span class="ruby-comment">#must be a restricted set of values. </span>
+ <span class="ruby-ivar">@draft_mode</span> = <span class="ruby-identifier">args</span>[<span class="ruby-value">:draft_mode</span>] <span class="ruby-operator">||</span> <span class="ruby-keyword">false</span>
+ <span class="ruby-ivar">@document_type</span> = <span class="ruby-identifier">args</span>[<span class="ruby-value">:document_type</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">DefaultType</span>
+ <span class="ruby-ivar">@document_paper</span> = <span class="ruby-identifier">args</span>[<span class="ruby-value">:document_paper</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">DefaultPaper</span>
+ <span class="ruby-ivar">@document_fontsize</span> = <span class="ruby-identifier">args</span>[<span class="ruby-value">:document_fontsize</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">DefaultFontSize</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- new-source -->
           
@@ -219,15 +248,25 @@
 
           
           <div class="method-source-code" id="compile-source">
-            <pre><span class="ruby-comment"># File latex_train.rb, line 22</span>
+            <pre><span class="ruby-comment"># File latex_train.rb, line 37</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">compile</span>
  <span class="ruby-identifier">create_file</span>
  <span class="ruby-keyword">if</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">local_filename</span>)
-      <span class="ruby-identifier">line</span> = <span class="ruby-constant">Cocaine</span><span class="ruby-operator">::</span><span class="ruby-constant">CommandLine</span>.<span class="ruby-identifier">new</span>(<span class="ruby-string">&quot;pdflatex&quot;</span>,<span class="ruby-node">&quot;-file-line-error -interaction :mode #{local_filename}&quot;</span>,<span class="ruby-value">:mode</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-string">&quot;nonstopmode&quot;</span>)
-      <span class="ruby-identifier">p</span> <span class="ruby-identifier">line</span>.<span class="ruby-identifier">command</span>
-      <span class="ruby-identifier">line</span>.<span class="ruby-identifier">run</span> <span class="ruby-comment"># run this as a background job</span>
+      <span class="ruby-identifier">short_local_filename</span> = <span class="ruby-ivar">@local_filename</span>.<span class="ruby-identifier">chomp</span>(<span class="ruby-constant">File</span>.<span class="ruby-identifier">extname</span>(<span class="ruby-ivar">@local_filename</span>))
+      <span class="ruby-identifier">line</span> = <span class="ruby-constant">Cocaine</span><span class="ruby-operator">::</span><span class="ruby-constant">CommandLine</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">command_line</span>)
+      <span class="ruby-keyword">begin</span>
+       <span class="ruby-identifier">line</span>.<span class="ruby-identifier">run</span> 
+      <span class="ruby-keyword">rescue</span> <span class="ruby-constant">Cocaine</span><span class="ruby-operator">::</span><span class="ruby-constant">ExitStatusError</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">e</span>
+       <span class="ruby-identifier">p</span> <span class="ruby-string">&quot;PDFLatex error, see log on &quot;</span><span class="ruby-operator">+</span><span class="ruby-identifier">short_local_filename</span><span class="ruby-operator">+</span><span class="ruby-string">&quot;.log&quot;</span>
+      <span class="ruby-keyword">end</span>
+      
+      <span class="ruby-identifier">short_local_filename</span> = <span class="ruby-identifier">local_filename</span>.<span class="ruby-identifier">chomp</span>(<span class="ruby-constant">File</span>.<span class="ruby-identifier">extname</span>(<span class="ruby-identifier">local_filename</span>))
+      <span class="ruby-keyword">if</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">short_local_filename</span><span class="ruby-operator">+</span><span class="ruby-string">&quot;.pdf&quot;</span>)
+       <span class="ruby-identifier">p</span> <span class="ruby-string">&quot;PDF file created on &quot;</span><span class="ruby-operator">+</span><span class="ruby-identifier">short_local_filename</span><span class="ruby-operator">+</span><span class="ruby-string">&quot;.pdf&quot;</span>
+      <span class="ruby-keyword">end</span>
+ <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">p</span> <span class="ruby-string">&quot;Latex .tex file not created&quot;</span>
  <span class="ruby-keyword">end</span>
-      <span class="ruby-comment"># else error</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- compile-source -->
           
@@ -255,7 +294,7 @@
 
           
           <div class="method-source-code" id="postamble-source">
-            <pre><span class="ruby-comment"># File latex_train.rb, line 18</span>
+            <pre><span class="ruby-comment"># File latex_train.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">postamble</span>
   <span class="ruby-string">&quot;\\end{document}&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -285,9 +324,11 @@
 
           
           <div class="method-source-code" id="preamble-source">
-            <pre><span class="ruby-comment"># File latex_train.rb, line 14</span>
+            <pre><span class="ruby-comment"># File latex_train.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">preamble</span>
- <span class="ruby-string">&quot;\\documentclass[a4paper,11pt]{article}\n&quot;</span><span class="ruby-operator">+</span><span class="ruby-string">&quot;\\begin{document}\n&quot;</span>
+  <span class="ruby-identifier">document</span> = <span class="ruby-string">&quot;\\documentclass[&quot;</span><span class="ruby-operator">+</span><span class="ruby-node">&quot;#{@document_paper}&quot;</span><span class="ruby-operator">+</span><span class="ruby-string">&quot;,&quot;</span><span class="ruby-operator">+</span><span class="ruby-node">&quot;#{@document_fontsize}&quot;</span><span class="ruby-operator">+</span><span class="ruby-string">&quot;]{&quot;</span><span class="ruby-operator">+</span><span class="ruby-node">&quot;#{@document_type}&quot;</span><span class="ruby-operator">+</span><span class="ruby-string">&quot;}&quot;</span>
+  <span class="ruby-identifier">document</span> <span class="ruby-operator">+=</span> <span class="ruby-string">&quot;\\begin{document}\n&quot;</span>
+ 
 <span class="ruby-keyword">end</span></pre>
           </div><!-- preamble-source -->
           
